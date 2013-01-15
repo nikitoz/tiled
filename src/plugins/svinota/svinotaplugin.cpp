@@ -32,7 +32,7 @@
 #include "objectgroup.h"
 #include <QList>
 #include <QMessageBox>
-#include "svinota_ffobjects.hpp"
+#include "svinota_ffobjects.h"
 
 using namespace Svinota;
 
@@ -63,16 +63,11 @@ bool SvinotaPlugin::write(const Tiled::Map *map, const QString &fileName)
         return false;
     }
 
-	QList<ObjectGroup*> lstObjectGroups = map->objectGroups();
-	foreach(const ObjectGroup* pObjGr, lstObjectGroups) {	
-		if (!pObjGr->isVisible())
-			continue;
-
-		svinota_writer writer;
-		foreach (const MapObject* pMapObj, pObjGr->objects())
-			try { QString s = writer.write(pMapObj); sOut += s; } 
-			catch(const QString& exc) { QMessageBox::critical(NULL, "export error", exc); }
-	}
+	foreach(const ObjectGroup* pObjGr, map->objectGroups())	
+		if (pObjGr->isVisible())
+			foreach (const MapObject* pMapObj, pObjGr->objects())
+				try { sOut += svinota_writer::write(pMapObj);} 
+				catch(const QString& exc) { QMessageBox::critical(NULL, "export error", exc); }
 
     QFile file(fileName);
     if (!file.open(QIODevice::WriteOnly)) {
