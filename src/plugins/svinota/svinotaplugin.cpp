@@ -66,8 +66,8 @@ bool SvinotaPlugin::write(const Tiled::Map *map, const QString &fileName)
 	foreach(const ObjectGroup* pObjGr, map->objectGroups())	
 		if (pObjGr->isVisible())
 			foreach (const MapObject* pMapObj, pObjGr->objects())
-				try { sOut += svinota_writer::write(pMapObj);} 
-				catch(const QString& exc) { QMessageBox::critical(NULL, "export error", exc); }
+				try { sOut += svinota_writer::write(pMapObj); } 
+				catch( const QString& exc ) { QMessageBox::critical(NULL, "export error", exc); }
 
     QFile file(fileName);
     if (!file.open(QIODevice::WriteOnly)) {

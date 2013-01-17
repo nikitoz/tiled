@@ -25,6 +25,19 @@ automappingconverter.exe
 *.a
 *.lib
 *.exp
+*.gif
+*.pdb
+*.ilk
+*.css
+*.xslt
+*.htm
+*.ncb
+*.vcproj
+*.res
+*.user
+*.sln
+*.suo
+*.XML
 *.intermediate.manifest
 
 tests/test_mapreader

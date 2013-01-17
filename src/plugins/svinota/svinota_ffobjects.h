@@ -61,23 +61,27 @@ namespace Svinota {
 		virtual QString		auxParams ( const Tiled::MapObject* pObj ) const;
 	};
 
-	class object_writer    : public base_writer {
-	protected:
-		virtual QString		auxParams ( const Tiled::MapObject* pObj ) const;
-	};
-
 	class platform_writer  : public base_writer {
 	protected:
 		virtual QString		auxParams ( const Tiled::MapObject* pObj ) const;
 	};
 
-	class animation_writer : public base_writer {
+	class animation_writer : public base_writer	{
 	protected:
 		virtual QString		auxParams ( const Tiled::MapObject* pObj ) const;
 	};
 
+	class tuffster_writer : public base_writer 
+	{	};
+
+	class moostery_writer : public base_writer 
+	{	};
+
+	class object_writer   : public base_writer 
+	{	};
+
 	struct svinota_writer
-	{ static QString		write ( const Tiled::MapObject* pObj ); };
+	{ static QString		write	  ( const Tiled::MapObject* pObj ); };
 
 } // namespace Svinota
 
