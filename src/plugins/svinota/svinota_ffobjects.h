@@ -35,7 +35,7 @@ namespace Svinota {
 
 	class base_writer {
 	public:
-		QString				write ( const Tiled::MapObject* pObj, int mapHeight, int mapWidth ) const;
+		virtual QString		write ( const Tiled::MapObject* pObj, int mapHeight, int mapWidth ) const;
 
 	protected:
 		virtual QString		auxParams ( const Tiled::MapObject* pObj ) const;
@@ -71,14 +71,25 @@ namespace Svinota {
 		virtual QString		auxParams ( const Tiled::MapObject* pObj ) const;
 	};
 
-	class tuffster_writer : public base_writer 
-	{	};
+	class door_writer	   : public base_writer {
+	protected:
+		virtual QString		auxParams ( const Tiled::MapObject* pObj ) const;
+	};
 
-	class moostery_writer : public base_writer 
-	{	};
+	class button_writer	   : public base_writer {
+	protected:
+		virtual QString		auxParams ( const Tiled::MapObject* pObj ) const;
+	};
 
-	class object_writer   : public base_writer 
-	{	};
+	class pedestal_writer  : public base_writer {
+	protected:
+		virtual QString		auxParams ( const Tiled::MapObject* pObj ) const;
+	};
+
+	class include_writer   : public base_writer {
+	public:
+		virtual QString		write ( const Tiled::MapObject* pObj, int mapHeight, int mapWidth ) const;
+	};
 
 	struct svinota_writer
 	{ static QString		write	  ( const Tiled::MapObject* pObj ); };

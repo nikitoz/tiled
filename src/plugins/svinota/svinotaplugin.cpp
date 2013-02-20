@@ -51,11 +51,17 @@ bool SvinotaPlugin::supportsFile(const QString &fileName) const
 }
 
 // Writer
-bool SvinotaPlugin::write(const Tiled::Map *map, const QString &fileName)
+bool SvinotaPlugin::write(const Tiled::Map *map, const QString& fileName)
 {
     using namespace Tiled;
 
-	QString sOut;
+	QString sOut (
+		"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+		"<plist version=\"1.0\">\n"
+		"<dict>\n"
+		);
+
+	QString sObjects;
 
     // Check layer count and type
     if (map->objectGroupCount() <= 0) {
@@ -63,11 +69,18 @@ bool SvinotaPlugin::write(const Tiled::Map *map, const QString &fileName)
         return false;
     }
 
-	foreach(const ObjectGroup* pObjGr, map->objectGroups())	
-		if (pObjGr->isVisible())
-			foreach (const MapObject* pMapObj, pObjGr->objects())
-				try { sOut += svinota_writer::write(pMapObj); } 
-				catch( const QString& exc ) { QMessageBox::critical(NULL, "export error", exc); }
+	foreach( const ObjectGroup* pObjGr, map->objectGroups() )
+		if ( pObjGr->isVisible() )
+			foreach ( const MapObject* pMapObj, pObjGr->objects() )
+				try { 
+					if ( pMapObj->type() == "ff_include" )
+						sOut += svinota_writer::write( pMapObj );
+					else
+						sObjects += svinota_writer::write( pMapObj );
+				} catch( const QString& exc ) 
+				{ QMessageBox::critical( NULL, "export error", exc ); }
+
+	sOut += sObjects + "<key>ff_debug_draw</key>\n<false/>\n</dict>\n</plist>";
 
     QFile file(fileName);
     if (!file.open(QIODevice::WriteOnly)) {

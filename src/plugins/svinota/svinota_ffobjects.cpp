@@ -26,6 +26,7 @@
 #include <QMap>
 #include <QPair>
 #include "objectgroup.h"
+#include "properties.h"
 
 namespace Svinota {
 
@@ -37,14 +38,17 @@ namespace Svinota {
 	static const QString BODY	 = "ff_body";
 	static const QString TEXTURE = "ff_texture";
 
+	static const QString PHYSICS_PLIST = "ff_physics_plist";
+	static const QString ATLAS_PLIST   = "ff_atlas_plist";
+
 	QString base_writer::write ( const Tiled::MapObject* pObj, int mapHeight, int mapWidth ) const {
 		Q_UNUSED(mapWidth);
 		return 
-			  "\n<key>" + pObj->name() + "</key>\n"
+			  "\n<key>" + pObj->type() + pObj->name() + "</key>\n"
 			+ "<dict>\n"
 
-				+ buildFromValue ( x(), QString::number ( pObj->x() ), "float" )
-				+ buildFromValue ( y(), QString::number ( mapHeight - pObj->y() ), "float" )
+				+ buildFromValue ( x(), QString::number ( pObj->x() ), "real" )
+				+ buildFromValue ( y(), QString::number ( mapHeight - pObj->y() ), "real" )
 				+ buildFromProp  ( isSensor(), pObj->properties(), "" )
 				+ buildFromProp  ( isStatic(), pObj->properties(), "" )
 				+ buildFromProp  ( texture(),  pObj->properties(), "string"  )
@@ -76,17 +80,17 @@ namespace Svinota {
 	QString base_writer::texture () const 
 	{ return TEXTURE; }
 
-	QString base_writer::auxParams ( const Tiled::MapObject* pObj ) const 
-	{ Q_UNUSED ( pObj ); return QString::null;	}
+	QString base_writer::auxParams ( const Tiled::MapObject* ) const 
+	{ return QString::null;	}
 
-	QString base_writer::buildFromProp ( const QString& sProp, const Tiled::Properties& propMap, const QString& sTag ) const	{
+	QString base_writer::buildFromProp ( const QString& sProp, const Tiled::Properties& propMap, const QString& sTag ) const {
 		return (propMap.contains(sProp) ?
 			"\t<key>" + sProp + "</key>\n" + 
 			(sTag.isEmpty() ? "\t<" + propMap[sProp] + "/>\n" : "\t<"+sTag+">" + propMap[sProp] + "</"+sTag+">\n")
 			: QString::null );
 	}
 
-	QString base_writer::buildFromValue ( const QString& sProp, const QString& sVal, const QString& sTag ) const	{
+	QString base_writer::buildFromValue ( const QString& sProp, const QString& sVal, const QString& sTag ) const {
 		return 
 			  "\t<key>" + sProp + "</key>\n"
 			+ "\t<"+sTag+">" + sVal + "</"+sTag+">\n";
@@ -95,38 +99,64 @@ namespace Svinota {
 	QString portals_writer::auxParams ( const Tiled::MapObject* pObj ) const
 	{ return buildFromProp ( "ff_portal_id", pObj->properties (), "integer" ); }
 
-
 	QString gravity_writer::auxParams ( const Tiled::MapObject* pObj ) const
 	{ return buildFromProp ( "ff_is_reverse", pObj->properties (), "" ); }
 
-	QString platform_writer::auxParams ( const Tiled::MapObject* pObj ) const
-	{ Q_UNUSED ( pObj ); return QString::null; }
+	QString door_writer::auxParams( const Tiled::MapObject* pObj ) const
+	{ return buildFromProp( "ff_button_door_id", pObj->properties(), "integer" ); }
 
+	QString button_writer::auxParams( const Tiled::MapObject* pObj ) const {
+		return	 buildFromProp( "ff_button_door_id"		, pObj->properties(), "integer" )
+			   + buildFromProp( "ff_pedestal_button_id" , pObj->properties(), "integer" ); 
+	}
+
+	QString pedestal_writer::auxParams( const Tiled::MapObject* pObj ) const
+	{ return buildFromProp( "ff_pedestal_button_id" , pObj->properties(), "integer" ); }
+
+	QString platform_writer::auxParams ( const Tiled::MapObject* pObj ) const {
+		return   buildFromProp ( "ff_velocity", pObj->properties (), "real" )
+			   + buildFromProp ( "ff_x_script",	pObj->properties (), "real"  ); 
+	}
 
 	QString animation_writer::auxParams ( const Tiled::MapObject* pObj ) const {
 		return   buildFromProp ( "ff_last_frame", pObj->properties (), "integer" )
 			   + buildFromProp ( "ff_action",	  pObj->properties (), "string"  ); 	
 	}
 
+	QString include_writer::write( const Tiled::MawapObject* pObj, int , int ) const {
+		QString sOut;
+		Tiled::Properties properties = pObj->properties();
+		for ( Tiled::Properties::const_iterator it = properties.constBegin(); it != properties.constEnd(); ++it )
+			sOut +=  buildFromProp  ( it.key(), pObj->properties(), "string" ) + "\n";
+		return sOut;
+	}
 
 	typedef QPair<QString, base_writer*> ffwriter_t;
 	ffwriter_t writers[ ] = {
-	      ffwriter_t ( "ff_script_portal",    new portals_writer )
-		, ffwriter_t ( "ff_script_gravity",   new gravity_writer )
-		, ffwriter_t ( "ff_object",			  new object_writer )
-		, ffwriter_t ( "ff_moving_platform",  new platform_writer )
-		, ffwriter_t ( "ff_script_animation", new animation_writer )
-		, ffwriter_t ( "ff_tuffster",		  new tuffster_writer )
-		, ffwriter_t ( "ff_moostery",		  new moostery_writer )
+	      ffwriter_t ( "ff_script_portal",			new portals_writer )
+		, ffwriter_t ( "ff_script_gravity",			new gravity_writer )
+		, ffwriter_t ( "ff_object",					new base_writer )
+		, ffwriter_t ( "ff_script_move_x",			new platform_writer )
+		, ffwriter_t ( "ff_script_animation",		new animation_writer )
+		, ffwriter_t ( "ff_tuffster",				new base_writer )
+		, ffwriter_t ( "ff_moostery",				new base_writer )
+		, ffwriter_t ( "ff_script_finish",			new base_writer )
+		, ffwriter_t ( "ff_include",				new include_writer )
+		, ffwriter_t ( "ff_lvl",					new base_writer )
+		, ffwriter_t ( "ff_script_door",			new door_writer )
+		, ffwriter_t ( "ff_script_button",			new button_writer )
+		, ffwriter_t ( "ff_script_kills",			new base_writer )
+		, ffwriter_t ( "ff_script_pedestal_button", new pedestal_writer )
 	};
 
 	QString svinota_writer::write ( const Tiled::MapObject* pObj ) {
 		int n = sizeof ( writers ) / sizeof ( ffwriter_t );
 		for ( int i = 0; i < n; ++i )
-			if ( pObj->name ().contains ( writers[ i ].first ) )
+			if ( pObj->type ().contains ( writers[ i ].first ) )
 				return writers[ i ].second->write ( pObj, pObj->objectGroup()->map()->height(), pObj->objectGroup()->map()->width() );
 
-		throw QString ( "Couldn't find writer for " + pObj->name () + " object!\n" );
+		throw QString ( "Couldn't find writer for " + pObj->type () + " object!\n" );
 	}
+
 
 } // namespace Svinota
