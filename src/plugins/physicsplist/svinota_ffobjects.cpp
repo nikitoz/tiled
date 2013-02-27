@@ -123,7 +123,7 @@ namespace Svinota {
 			   + buildFromProp ( "ff_action",	  pObj->properties (), "string"  ); 	
 	}
 
-	QString include_writer::write( const Tiled::MapObject* pObj, int , int ) const {
+	QString include_writer::write( const Tiled::MawapObject* pObj, int , int ) const {
 		QString sOut;
 		Tiled::Properties properties = pObj->properties();
 		for ( Tiled::Properties::const_iterator it = properties.constBegin(); it != properties.constEnd(); ++it )

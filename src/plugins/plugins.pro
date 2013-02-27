@@ -1,2 +1,2 @@
 TEMPLATE = subdirs
-SUBDIRS = svinota
+SUBDIRS =  svinota physicsplist
