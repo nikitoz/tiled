@@ -50,6 +50,7 @@ public:
     // MapReaderInterface
     Tiled::Map *read(const QString &fileName);
     bool supportsFile(const QString &fileName) const;
+	QString makeQuad( int x, int y, int w, int h ) const;
 
     // MapWriterInterface
     bool write(const Tiled::Map *map, const QString &fileName);
